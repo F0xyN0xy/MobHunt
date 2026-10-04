@@ -1,30 +1,30 @@
 package com.mobhunt;
 
-import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.passive.PassiveEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
-import net.minecraft.world.GameMode;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
-import com.mojang.brigadier.arguments.StringArgumentType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
+
+import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.mob.HostileEntity;
+import net.minecraft.entity.passive.PassiveEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
+import net.minecraft.server.command.CommandManager;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
+import net.minecraft.world.GameMode;
 
 public class MobHuntMod implements ModInitializer {
 
@@ -119,14 +119,20 @@ public class MobHuntMod implements ModInitializer {
 
         // ── SERVER TICK ──────────────────────────────────────────────────────
         ServerTickEvents.END_SERVER_TICK.register(server -> {
-            if (!gameActive) return;
+            if (!gameActive) {
+                // Freeze lobby: zero velocity so players can't walk/fly away
+                for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+                    player.setVelocity(0, 0, 0);
+                    player.velocityModified = true;
+                }
+                return;
+            }
 
             for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
                 UUID uuid = player.getUuid();
 
                 int ticks = ticksSinceKill.getOrDefault(uuid, 0) + 1;
                 ticksSinceKill.put(uuid, ticks);
-
                 int remaining = killTimerTicks - ticks;
 
                 if (ticks % 20 == 0) {
@@ -146,7 +152,6 @@ public class MobHuntMod implements ModInitializer {
 
                 if (remaining <= 0) {
                     // In 1.21.1, kill() takes a ServerWorld parameter
-                    ServerWorld world = player.getServerWorld();
                     player.kill();
                     player.sendMessage(Text.literal("☠ You failed to kill a mob in time! Game Over.")
                             .formatted(Formatting.DARK_RED, Formatting.BOLD), false);
