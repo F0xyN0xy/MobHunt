@@ -17,7 +17,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           generate_release_notes: true
       - name: Publish to Modrinth
-        if: secrets.MODRINTH_TOKEN != ''
+        if: ${{ secrets.MODRINTH_TOKEN != '' }}
         uses: modrinth/action@v1
         env:
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
