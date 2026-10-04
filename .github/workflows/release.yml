@@ -17,12 +17,11 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           generate_release_notes: true
       - name: Publish to Modrinth
-        uses: modrinth/action@v1
-        env:
-          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
-          MODRINTH_PROJECT_ID: ${{ secrets.MODRINTH_PROJECT_ID }}
-          VERSION_NAME: ${{ github.ref_name }}
-          VERSION_NUMBER: ${{ github.ref_name }}
-          FILE: build/libs/*.jar
-          GAME_VERSION: 1.21.1
-          LOADER: fabric
+        uses: cloudnode-pro/modrinth-publish@v2
+        with:
+          token: ${{ secrets.MODRINTH_TOKEN }}
+          project: fx5GXOIT
+          version: ${{ github.ref_name }}
+          files: build/libs/*.jar
+          loaders: fabric
+          game-versions: 1.21.1
