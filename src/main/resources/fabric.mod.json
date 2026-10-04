@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "mobhunt",
-  "version": "1.3.0+1.20.X",
+  "version": "1.3.3+1.20.X",
   "name": "MobHunt - Kill or Die",
   "description": "Kill a mob every X minutes or you die! Supports custom timers and kill mode config.",
   "authors": ["FoxyMigurdia"],
